@@ -230,7 +230,7 @@ class TransifexLib
         $query = [
             'filter[project]' => $this->buildProjectId($projectSlug),
             'include' => 'language',
-            'page[size]' => 200,
+            //'page[size]' => 200,
         ];
 
         do {
@@ -339,13 +339,19 @@ class TransifexLib
         $query = [
             'filter[project]' => $this->buildProjectId($projectSlug),
             'filter[resource]' => $this->buildResourceId($projectSlug, $resourceSlug),
-            'page[size]' => 1,
+            //'page[size]' => 1,
         ];
         if (null !== $language) {
             $query['filter[language]'] = $this->buildLanguageId((string)$language);
         }
 
-        $response = $this->request('GET', 'resource_language_stats', $query);
+        try {
+            $response = $this->request('GET', 'resource_language_stats', $query);
+        } catch (Exception $e) {
+            return [];
+        }
+
+
         $data = $response['data'][0]['attributes'] ?? [];
 
         if (!\is_array($data) || 0 === \count($data)) {

@@ -1,6 +1,16 @@
 <!-- Header -->
 <{include file='db:wgtransifex_admin_header.tpl' }>
-
+<{if $deleted_projects|default:''}>
+    <div class="wgt-error-info">
+        <p><{$smarty.const._AM_WGTRANSIFEX_CHECKTX_PROJECTS_DELETED_1}></p>
+        <ul>
+            <{foreach item=pro_slug from=$deleted_projects}>
+                <li><{$pro_slug}></li>
+            <{/foreach}>
+        </ul>
+        <p><{$smarty.const._AM_WGTRANSIFEX_CHECKTX_PROJECTS_DELETED_2}></p>
+    </div>
+<{/if}>
 <{if $projects_list|default:''}>
     <table class='table table-bordered'>
         <thead>

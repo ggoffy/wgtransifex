@@ -337,3 +337,7 @@ The idea is to use the same logos e.g. in news, blogs or to illustrate the trans
 \define('_AM_WGTRANSIFEX_MAINTAINED', '<strong>%s</strong> is maintained by the ');
 \define('_AM_WGTRANSIFEX_SUPPORT_FORUM', 'Support Forum');
 \define('_AM_WGTRANSIFEX_DONATION_AMOUNT', 'Donation Amount');
+//version 1.1.2
+\define('_AM_WGTRANSIFEX_CHECKTX_TRANSLATION_SKIPPED', 'Following checks have been skipped:');
+\define('_AM_WGTRANSIFEX_CHECKTX_PROJECTS_DELETED_1', 'Following projects are not available on Transifex anymore:');
+\define('_AM_WGTRANSIFEX_CHECKTX_PROJECTS_DELETED_2', 'Please delete them otherwise unexpected errors can occur!');

@@ -337,3 +337,7 @@ Die Idee dahinter ist, dass man die selben Logos z.B. für News, Blogs oder eben
 \define('_AM_WGTRANSIFEX_MAINTAINED', '<strong>%s</strong> wird unterstützt von ');
 \define('_AM_WGTRANSIFEX_SUPPORT_FORUM', 'Support Forum');
 \define('_AM_WGTRANSIFEX_DONATION_AMOUNT', 'Spendenbetrag');
+//version 1.1.2
+\define('_AM_WGTRANSIFEX_CHECKTX_TRANSLATION_SKIPPED', 'Folgende Überprüfungen wurden übersprungen:');
+\define('_AM_WGTRANSIFEX_CHECKTX_PROJECTS_DELETED_1', 'Folgende Projekte sind auf Transifex nicht mehr vorhanden:');
+\define('_AM_WGTRANSIFEX_CHECKTX_PROJECTS_DELETED_2', 'Bitte löschen Sie diese Projekte da sonst unerwartete Fehler auftreten können!');

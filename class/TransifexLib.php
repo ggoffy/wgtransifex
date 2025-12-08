@@ -510,11 +510,7 @@ class TransifexLib
         $responseBody = (string)($rawResponse['body'] ?? '');
         $error = $rawResponse['error'] ?? null;
 
-        if (404 == $status) {
-            //_AM_WGTRANSIFEX_CHECKTX_TRANSLATION_ERROR_404
-            $message = $this->extractErrorMessage($responseBody) ?? ($error ?: 'Unexpected HTTP status: ' . $status);
-            throw new \RuntimeException($message, $status);
-        } elseif ($status < 200 || $status >= 300) {
+        if ($status < 200 || $status >= 300) {
             $message = $this->extractErrorMessage($responseBody) ?? ($error ?: 'Unexpected HTTP status: ' . $status);
             throw new \RuntimeException($message, $status);
         }

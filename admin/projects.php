@@ -62,20 +62,34 @@ switch ($op) {
         $GLOBALS['xoopsTpl']->assign('buttons', $adminObject->displayButton('left'));
         $GLOBALS['xoopsTpl']->assign('displayTxAdmin', $displayTxAdmin);
         $crProjects = new \CriteriaCompo();
+        // search for deleted projects on Transifex
+        $projectsCount = $projectsHandler->getCountProjects();
+        $deletedProjects = [];
+        if ($projectsCount > 0) {
+            $projectsAll = $projectsHandler->getAll($crProjects);
+            foreach (\array_keys($projectsAll) as $i) {
+                if (Constants::STATUS_DELETEDTX === (int)$projectsAll[$i]->getVar('pro_status')) {
+                    $deletedProjects[] = $projectsAll[$i]->getVar('pro_slug');
+                }
+            }
+            $GLOBALS['xoopsTpl']->assign('deleted_projects', $deletedProjects);
+        }
         $crProjects->setSort($sortby);
         $crProjects->setOrder($order);
         $crProjects->setStart($start);
         $crProjects->setLimit($limit);
         $projectsCount = $projectsHandler->getCountProjects();
-        $projectsAll = $projectsHandler->getAll($crProjects);
+
         $GLOBALS['xoopsTpl']->assign('projects_count', $projectsCount);
         $GLOBALS['xoopsTpl']->assign('wgtransifex_url', \WGTRANSIFEX_URL);
         $GLOBALS['xoopsTpl']->assign('wgtransifex_upload_url', \WGTRANSIFEX_UPLOAD_URL);
         // Table view projects
         if ($projectsCount > 0) {
+            $projectsAll = $projectsHandler->getAll($crProjects);
             foreach (\array_keys($projectsAll) as $i) {
                 $project = $projectsAll[$i]->getValuesProjects();
                 $GLOBALS['xoopsTpl']->append('projects_list', $project);
+
                 unset($project);
             }
             // Display Navigation
@@ -281,7 +295,7 @@ switch ($op) {
              }
             //delete all translations
             $crTranslations = new \CriteriaCompo();
-            $crTranslations->add(new \Criteria('res_pro_id', $proId));
+            $crTranslations->add(new \Criteria('tra_pro_id', $proId));
             if (!$translationsHandler->deleteAll($crTranslations)) {
                 $GLOBALS['xoopsTpl']->assign('error', $translationsHandler->getHtmlErrors());
             }

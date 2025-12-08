@@ -72,8 +72,7 @@ class Transifex
         $txprojects = [];
         //request data from transifex
         $transifexLib = new \XoopsModules\Wgtransifex\TransifexLib();
-        $transifexLib->user = $setting['user'];
-        $transifexLib->password = $setting['pwd'];
+        $transifexLib->configure($setting['organization'], $setting['token']);
         $items = $transifexLib->getProjects();
         foreach ($items as $item) {
             $txprojects[] = $item['slug'];
@@ -187,8 +186,7 @@ class Transifex
         $resourcesHandler->updateAll('res_status', Constants::STATUS_OUTDATED, $crResources, true);
         //request data from transifex
         $transifexLib = new \XoopsModules\Wgtransifex\TransifexLib();
-        $transifexLib->user = $setting['user'];
-        $transifexLib->password = $setting['pwd'];
+        $transifexLib->configure($setting['organization'], $setting['token']);
         $items = $transifexLib->getResources($project);
         foreach ($items as $item) {
             $resourcesObj = null;
@@ -255,8 +253,8 @@ class Transifex
         $setting = $this->getSetting();
 
         $transifexLib = new \XoopsModules\Wgtransifex\TransifexLib();
-        $transifexLib->user = $setting['user'];
-        $transifexLib->password = $setting['pwd'];
+        $transifexLib->configure($setting['organization'], $setting['token']);
+
         return $transifexLib->getLanguages($proSlug);
     }
 
@@ -297,8 +295,7 @@ class Transifex
         if ($resourcesCount > 0) {
             //request data from transifex
             $transifexLib = new \XoopsModules\Wgtransifex\TransifexLib();
-            $transifexLib->user = $setting['user'];
-            $transifexLib->password = $setting['pwd'];
+            $transifexLib->configure($setting['organization'], $setting['token']);
             $resourcesAll = $resourcesHandler->getAll($crResources);
             foreach (\array_keys($resourcesAll) as $i) {
                 $resId = $resourcesAll[$i]->getVar('res_id');
@@ -388,10 +385,10 @@ class Transifex
         $translationsCount = $translationsHandler->getCount();
         if ($translationsCount > 0) {
             $limit = 100;
+            $skipped = [];
             //request data from transifex
             $transifexLib = new \XoopsModules\Wgtransifex\TransifexLib();
-            $transifexLib->user = $setting['user'];
-            $transifexLib->password = $setting['pwd'];
+            $transifexLib->configure($setting['organization'], $setting['token']);
             for ($start = 0; $start <= $translationsCount; $start+=$limit) {
                 $crTranslations = new \CriteriaCompo();
                 $crTranslations->setStart($start);
@@ -400,6 +397,24 @@ class Transifex
                 foreach (\array_keys($translationsAll) as $i) {
                     $projectsObj = $projectsHandler->get($translationsAll[$i]->getVar('tra_pro_id'));
                     $project = $projectsObj->getVar('pro_slug');
+                    $proStatus = (int)$projectsObj->getVar('pro_status');
+                    if (Constants::STATUS_DELETEDTX === $proStatus) {
+                        // project is'nt available on Transifex anymore
+                        $skipped[$projectsObj->getVar('pro_id')] = [
+                            'obj_slug' => $project,
+                            'obj_status_text' => _AM_WGTRANSIFEX_STATUS_DELETEDTX,
+                        ];
+                        break;
+                    }
+                    if (Constants::STATUS_OUTDATED === $proStatus) {
+                        // project is outdated
+                        $skipped[$projectsObj->getVar('pro_id')] = [
+                            'obj_slug' => $project,
+                            'obj_status_text' => _AM_WGTRANSIFEX_STATUS_OUTDATED,
+                        ];
+                        break;
+                    }
+
                     $resourceObj = $resourcesHandler->get($translationsAll[$i]->getVar('tra_res_id'));
                     $resource = '';
                     if (\is_object($resourceObj)) {
@@ -415,8 +430,15 @@ class Transifex
                     } else {
                         $count_err++;
                     }
-                    //$item          = $transifexLib->getTranslation($project, $resource, $language, $resSourceLang);
                     $stats = $transifexLib->getStats($project, $resource, $language);
+                    if (count($stats) === 0) {
+                        // stat for project, resource and language not found
+                        $skipped[$projectsObj->getVar('pro_id')] = [
+                            'obj_slug' => $resource,
+                            'obj_status_text' => _AM_WGTRANSIFEX_STATUS_DELETEDTX,
+                        ];
+                        break;
+                    }
                     $traLastUpdate = 0;
                     if (\is_string($stats['last_update'])) {
                         $traLastUpdate = \strtotime($stats['last_update']);
@@ -455,6 +477,12 @@ class Transifex
             $ret = \_AM_WGTRANSIFEX_READTX_OK . '<br>';
             $ret .= \_AM_WGTRANSIFEX_CHECKTX_TRANSLATION_OK . $count_ok . '<br>';
             $ret .= \_AM_WGTRANSIFEX_CHECKTX_TRANSLATION_OUTDATED . $count_update . '<br>';
+            if (count($skipped) > 0) {
+                $ret .= \_AM_WGTRANSIFEX_CHECKTX_TRANSLATION_SKIPPED . '<br>';
+                foreach ($skipped as $skippedObj) {
+                    $ret .= $skippedObj['obj_slug'] . ' - ' . $skippedObj['obj_status_text'] . '<br>';
+                }
+            }
 
             return $ret;
         }
@@ -486,8 +514,7 @@ class Transifex
 
         //request data from transifex
         $transifexLib = new TransifexLib();
-        $transifexLib->user = $setting['user'];
-        $transifexLib->password = $setting['pwd'];
+        $transifexLib->configure($setting['organization'], $setting['token']);
         $project = $projectsObj->getVar('pro_slug');
 
         // read resources data
@@ -568,6 +595,10 @@ class Transifex
 
         if (0 == \count($setting)) {
             \redirect_header('settings.php', 3, \_AM_WGTRANSIFEX_THEREARENT_SETTINGS);
+        }
+
+        if (empty($setting['organization']) || empty($setting['token'])) {
+            \redirect_header('settings.php', 3, \_AM_WGTRANSIFEX_SETTING_INCOMPLETE);
         }
 
         return $setting;

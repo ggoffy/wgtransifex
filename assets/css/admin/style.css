@@ -23,4 +23,10 @@
 .wgt-icon24 {
 	height:24px;
 }
+.wgt-error-info {
+    color:red;
+    border: 1px solid red;
+    margin-bottom:50px;
+    padding:15px;
+}
 

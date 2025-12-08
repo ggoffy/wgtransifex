@@ -146,8 +146,12 @@ require_once __DIR__ . '/main.php';
 \define('_AM_WGTRANSIFEX_SETTING_EDIT', 'Einstellung bearbeiten');
 // Elements of Setting
 \define('_AM_WGTRANSIFEX_SETTING_ID', 'Id');
-\define('_AM_WGTRANSIFEX_SETTING_USERNAME', 'Benutzername');
-\define('_AM_WGTRANSIFEX_SETTING_PASSWORD', 'Passwort');
+\define('_AM_WGTRANSIFEX_SETTING_ORGANIZATION', 'Organisations-Slug');
+\define('_AM_WGTRANSIFEX_SETTING_USERNAME', _AM_WGTRANSIFEX_SETTING_ORGANIZATION);
+\define('_AM_WGTRANSIFEX_SETTING_TOKEN', 'API-Token');
+\define('_AM_WGTRANSIFEX_SETTING_PASSWORD', _AM_WGTRANSIFEX_SETTING_TOKEN);
+\define('_AM_WGTRANSIFEX_SETTING_TOKEN_MASKED', 'API-Token (verdeckt)');
+\define('_AM_WGTRANSIFEX_SETTING_INCOMPLETE', 'Bitte zuerst einen Transifex-Organisations-Slug und ein API-Token in den Einstellungen hinterlegen.');
 \define('_AM_WGTRANSIFEX_SETTING_OPTIONS', 'Optionen');
 \define('_AM_WGTRANSIFEX_SETTING_DATE', 'Datum');
 \define('_AM_WGTRANSIFEX_SETTING_SUBMITTER', 'Einsender');
@@ -333,3 +337,7 @@ Die Idee dahinter ist, dass man die selben Logos z.B. für News, Blogs oder eben
 \define('_AM_WGTRANSIFEX_MAINTAINED', '<strong>%s</strong> wird unterstützt von ');
 \define('_AM_WGTRANSIFEX_SUPPORT_FORUM', 'Support Forum');
 \define('_AM_WGTRANSIFEX_DONATION_AMOUNT', 'Spendenbetrag');
+//version 1.1.2
+\define('_AM_WGTRANSIFEX_CHECKTX_TRANSLATION_SKIPPED', 'Folgende Überprüfungen wurden übersprungen:');
+\define('_AM_WGTRANSIFEX_CHECKTX_PROJECTS_DELETED_1', 'Folgende Projekte sind auf Transifex nicht mehr vorhanden:');
+\define('_AM_WGTRANSIFEX_CHECKTX_PROJECTS_DELETED_2', 'Bitte löschen Sie diese Projekte da sonst unerwartete Fehler auftreten können!');

@@ -285,44 +285,135 @@ class TransifexLib
      *
      * @return array
      */
-    public function getTranslation($project, $resource, $language, $language_source, $reviewedOnly = false)
-    {
-        $this->ensureConfigured();
-        $projectSlug = (string)$project;
-        $resourceSlug = (string)$resource;
-        $languageCode = (string)$language;
 
-        $query = [
-            'filter[resource]' => $this->buildResourceId($projectSlug, $resourceSlug),
-//            'page[size]' => 1,
+    /**
+     * Get translated text of a resource via Transifex async download API.
+     *
+     * @param string $project
+     * @param string $resource
+     * @param string $language
+     * @param string $resI18nType
+     *
+     * @return array{content:string, mimetype:string}
+     */
+    public function getTranslation(
+        string $project,
+        string $resource,
+        string $language,
+        string $resI18nType
+    ): array {
+        $this->ensureConfigured();
+
+        // start Async-Export
+        $body = [
+            'data' => [
+                'type' => 'resource_translations_async_downloads',
+                'attributes' => [
+                    'file_type' => 'json',
+                ],
+                'relationships' => [
+                    'resource' => [
+                        'data' => [
+                            'type' => 'resources',
+                            'id'   => $this->buildResourceId($project, $resource),
+                        ],
+                    ],
+                    'language' => [
+                        'data' => [
+                            'type' => 'languages',
+                            'id'   => $this->buildLanguageId($language),
+                        ],
+                    ],
+                ],
+            ],
         ];
 
-        if ($languageCode === (string)$language_source) {
-            $query['filter[is_source_language]'] = 'true';
+        $response = $this->request(
+            'POST',
+            'resource_translations_async_downloads',
+            [],
+            $body
+        );
+
+        // get Job-ID
+        $jobId = $response['data']['id'] ?? null;
+        if (!$jobId) {
+            throw new \RuntimeException('Missing async job ID from Transifex');
+        }
+
+        // download translation
+        $response = $this->waitForDownload($jobId);
+
+        $mimetype = 'text/plain';
+        if ('PHP_DEFINE' === $resI18nType) {
+            $raw = $this->generateDefines($response);
+            $mimetype = 'application/x-httpd-php';
         } else {
-            $query['filter[language]'] = $this->buildLanguageId($languageCode);
-        }
-
-        if ($reviewedOnly) {
-            $query['filter[reviewed]'] = 'true';
-        }
-
-        $response = $this->request('GET', 'resource_translations', $query);
-        $data = $response['data'][0] ?? [];
-        $attributes = $data['attributes'] ?? [];
-        $content = $attributes['content'] ?? '';
-        if (isset($attributes['content_encoding']) && 'base64' === $attributes['content_encoding']) {
-            $decoded = \base64_decode($content, true);
-            if (false !== $decoded) {
-                $content = $decoded;
-            }
+            $raw = $this->generatePlainText($response);
         }
 
         return [
-            'content' => $content,
-            'mimetype' => $attributes['content_type'] ?? 'text/plain',
+            'content'  => $raw,
+            'mimetype' => $mimetype
         ];
     }
+
+    private function waitForDownload(string $jobId, int $timeout = 30)
+    {
+        $start = \time();
+
+        do {
+            $response = $this->request(
+                'GET',
+                'resource_translations_async_downloads/' . \rawurlencode($jobId)
+            );
+
+            if (isset($response)) {
+                return $response;
+            }
+
+            \usleep(1_000_000); // 1 second
+        } while (\time() - $start < $timeout);
+
+        throw new \RuntimeException('Timed out waiting for Transifex download URL');
+    }
+
+    /**
+     * @param array $translations
+     *
+     * @return string
+     */
+    private function generateDefines(array $translations): string {
+        $lines = [];
+        foreach ($translations as $key => $data) {
+            $value = $data['string'] ?? '';
+
+            // Prüfen, ob der Wert ein Single-Quote enthält
+            if (strpos($value, "'") !== false) {
+                $lines[] = "DEFINE(\"$key\", \"$value\");";
+            } else {
+                $lines[] = "DEFINE('$key', '$value');";
+            }
+        }
+
+        return implode("\n", $lines);
+    }
+
+    /**
+     * @param array $translations
+     *
+     * @return string
+     */
+    private function generatePlainText(array $translations): string {
+        $lines = [];
+        foreach ($translations as $key => $data) {
+            $value = $data['string'] ?? '';
+            $lines[] = $value;
+        }
+
+        return implode("\n", $lines);
+    }
+
 
     /**
      * @param             $project
@@ -547,6 +638,11 @@ class TransifexLib
         if ($debug) {
             \curl_setopt($ch, \CURLOPT_VERBOSE, true);
         }
+        if (strtoupper($method) === 'GET') {
+            \curl_setopt($ch, \CURLOPT_FOLLOWLOCATION, true);
+            \curl_setopt($ch, \CURLOPT_MAXREDIRS, 5);
+        }
+
 
         $body = (string)\curl_exec($ch);
         $status = (int)\curl_getinfo($ch, \CURLINFO_HTTP_CODE);

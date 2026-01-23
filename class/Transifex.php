@@ -302,7 +302,8 @@ class Transifex
                 $resource = $resourcesAll[$i]->getVar('res_slug');
                 $resName = $resourcesAll[$i]->getVar('res_name');
                 $resSourceLang = $resourcesAll[$i]->getVar('res_source_language_code');
-                $item = $transifexLib->getTranslation($project, $resource, $language, $resSourceLang, $reviewedOnly);
+                $resI18nType = $resourcesAll[$i]->getVar('res_i18n_type');
+                $item = $transifexLib->getTranslation($project, $resource, $language, $resI18nType);
                 $translationsObj = null;
                 $crTranslations = new \CriteriaCompo();
                 $crTranslations->add(new \Criteria('tra_res_id', $resId));

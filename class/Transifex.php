@@ -264,12 +264,10 @@ class Transifex
      * @param      $traId
      * @param      $proId
      * @param      $langId
-     * @param bool $reviewedOnly
-     * @param bool $skipMissing
      * @param int  $resId
      * @return string
      */
-    public function readTranslations($traId, $proId, $langId, $reviewedOnly = false, $skipMissing = false, $resId = 0)
+    public function readTranslations($traId, $proId, $langId, $resId = 0)
     {
         $setting = $this->getSetting();
         global $xoopsUser;

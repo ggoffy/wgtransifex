@@ -344,16 +344,17 @@ class TransifexLib
         // download translation
         $response = $this->waitForDownload($jobId);
 
+        $content  = '';
         $mimetype = 'text/plain';
         if ('PHP_DEFINE' === $resI18nType) {
-            $raw = $this->generateDefines($response);
+            $content = $this->generateDefines($response);
             $mimetype = 'application/x-httpd-php';
         } else {
-            $raw = $this->generatePlainText($response);
+            $content = $this->generatePlainText($response);
         }
 
         return [
-            'content'  => $raw,
+            'content'  => $content,
             'mimetype' => $mimetype
         ];
     }

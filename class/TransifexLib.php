@@ -128,12 +128,17 @@ class TransifexLib
 
         $data = $response['data'] ?? [];
         $attributes = $data['attributes'] ?? [];
+        $relationships = $data['relationships'] ?? [];
+        $sourceLanguageCode = $relationships['source_language']['data']['id'] ?? '';
+        if ($sourceLanguageCode) {
+            $sourceLanguageCode = substr($sourceLanguageCode, 2, 10);
+        }
         $result = [
             'slug' => $attributes['slug'] ?? $projectSlug,
             'name' => $attributes['name'] ?? '',
             'description' => $attributes['description'] ?? '',
             'archived' => (bool)($attributes['archived'] ?? false),
-            'source_language_code' => $attributes['source_language_code'] ?? '',
+            'source_language_code' => $sourceLanguageCode,
             'last_updated' => $attributes['datetime_modified'] ?? null,
             'teams' => $this->extractProjectTeams($data),
             'resources' => [],
@@ -736,12 +741,17 @@ class TransifexLib
         $attributes = $project['attributes'] ?? [];
         $slug = $attributes['slug'] ?? $this->extractSlugFromId($project['id'] ?? '', 'p');
 
+        $relationships = $project['relationships'] ?? [];
+        $sourceLanguageCode = $relationships['source_language']['data']['id'] ?? '';
+        if ($sourceLanguageCode) {
+            $sourceLanguageCode = substr($sourceLanguageCode, 2, 10);
+        }
         return [
             'slug' => $slug,
             'name' => $attributes['name'] ?? '',
             'description' => $attributes['description'] ?? '',
             'archived' => (bool)($attributes['archived'] ?? false),
-            'source_language_code' => $attributes['source_language_code'] ?? '',
+            'source_language_code' => $sourceLanguageCode,
             'last_updated' => $attributes['datetime_modified'] ?? null,
         ];
     }
@@ -757,16 +767,16 @@ class TransifexLib
     {
         $attributes = $resource['attributes'] ?? [];
 
-        $sourceLanguage = $attributes['source_language_code'] ?? ($attributes['language_code'] ?? '');
-
         return [
             'slug' => $attributes['slug'] ?? $this->extractSlugFromId($resource['id'] ?? '', 'r'),
             'name' => $attributes['name'] ?? '',
             'i18n_type' => $attributes['i18n_type'] ?? '',
             'priority' => (int)($attributes['priority'] ?? 0),
-            'source_language_code' => $sourceLanguage,
+            'source_language_code' => '', // not available anymore
+            /* categories and metadata are not supported anymore
             'categories' => $this->toArray($attributes['categories'] ?? []),
             'metadata' => $this->toArray($attributes['metadata'] ?? []),
+            */
             'project' => $projectSlug,
         ];
     }

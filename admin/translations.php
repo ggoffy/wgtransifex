@@ -153,10 +153,13 @@ switch ($op) {
         if (0 == $proId && $resourcesCount > 0) {
             $adminObject->addItemButton(\_AM_WGTRANSIFEX_READTX_TRANSLATIONS, 'translations.php?op=readtx');
         }
-        //$adminObject->addItemButton(\_AM_WGTRANSIFEX_READTX_TRANSLATIONS_ALL, 'translations.php?op=readtxall', 'add');
         if ($translationsCount > 0) {
             $adminObject->addItemButton(\_AM_WGTRANSIFEX_CHECKTX_TRANSLATIONS, 'translations.php?op=checktx', 'addlink');
         }
+        if ($proId > 0) {
+            $adminObject->addItemButton(\_AM_WGTRANSIFEX_READTX_PROJECT_TRANSLATIONS_ALL, 'translations.php?op=savetx&amp;tra_id=0&amp;tra_pro_id=' .  $proId . '&amp;tra_lang_id=' . $langId, 'add');
+        }
+
         $GLOBALS['xoopsTpl']->assign('buttons', $adminObject->displayButton('left'));
         break;
     case 'readtx':
@@ -180,7 +183,20 @@ switch ($op) {
         $GLOBALS['xoopsTpl']->assign('form', $form->render());
         break;
     case 'savetx':
-        $resId     = Request::getInt('tra_res_id');
+        $resId  = Request::getInt('tra_res_id');
+        $projectsObj = $projectsHandler->get($proId);
+        if (is_object($projectsObj) && $langId > 0) {
+            $sourceLanguage = $projectsObj->getVar('pro_source_language_code');
+            $languagesObj = $languagesHandler->get($langId);
+            if (is_object($languagesObj)) {
+                if ((string)$languagesObj->getVar('lang_code') === $sourceLanguage) {
+                    \redirect_header('translations.php?op=list', 3,
+                        sprintf(_AM_WGTRANSIFEX_READTX_TRANSLATIONS_ERROR_SOURCELANG,
+                            $languagesObj->getVar('lang_name'),
+                            $sourceLanguage));
+                }
+            }
+        }
         //read translations
         $transifex = Transifex::getInstance();
         $result = $transifex->readTranslations($traId, $proId, $langId, $resId);

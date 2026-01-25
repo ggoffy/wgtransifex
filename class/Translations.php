@@ -339,7 +339,11 @@ class Translations extends \XoopsObject
         }
         $resourcesHandler = $helper->getHandler('Resources');
         $resourcesObj = $resourcesHandler->get($this->getVar('tra_res_id'));
-        $ret['res_id'] = $resourcesObj->getVar('res_slug');
+        $resSlug = '';
+        if (\is_object($resourcesObj)) {
+            $resSlug = $resourcesObj->getVar('res_slug');
+        }
+        $ret['res_id'] = $resSlug;
         $languagesHandler = $helper->getHandler('Languages');
         $languagesObj = $languagesHandler->get($this->getVar('tra_lang_id'));
         $ret['lang_id'] = $languagesObj->getVar('lang_name');

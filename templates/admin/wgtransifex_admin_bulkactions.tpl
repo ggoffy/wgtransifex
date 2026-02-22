@@ -4,7 +4,7 @@
 <h5><{$smarty.const._AM_WGTRANSIFEX_BULKACTION_INFO1}></h5>
 <h5><{$smarty.const._AM_WGTRANSIFEX_BULKACTION_INFO2}></h5>
 <br><br>
-<table class='table table-bordered'>
+<table class='outer'>
     <thead>
         <tr class='head'>
             <th class="center"><{$smarty.const._AM_WGTRANSIFEX_BULKACTION_DESC}></th>

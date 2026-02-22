@@ -3,7 +3,7 @@
 
 <h3><{$packages_result}></h3>
 <{if $packages_count|default:''}>
-    <table class='table table-bordered'>
+    <table class='outer'>
         <thead>
             <tr class='head'>
                 <th class='center'><{$smarty.const._AM_WGTRANSIFEX_BROKEN_TABLE}></th>

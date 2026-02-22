@@ -12,7 +12,7 @@
     </div>
 <{/if}>
 <{if $projects_list|default:''}>
-    <table class='table table-bordered'>
+    <table class='outer'>
         <thead>
             <tr class='head'>
                 <th class="center" style="min-width:50px">

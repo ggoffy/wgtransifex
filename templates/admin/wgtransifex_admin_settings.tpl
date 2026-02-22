@@ -2,7 +2,7 @@
 <{include file='db:wgtransifex_admin_header.tpl' }>
 
 <{if $settings_list|default:''}>
-    <table class='table table-bordered'>
+    <table class='outer'>
         <thead>
             <tr class='head'>
                 <th class="center"><{$smarty.const._AM_WGTRANSIFEX_SETTING_ID}></th>
